@@ -2,6 +2,23 @@
 title: DASE Components Explained (E-Commerce Recommendation)
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 <%= partial 'shared/dase/dase', locals: { template_name: 'E-Commerce Recommendation Engine Template' } %>
 
 ## The Engine Design
@@ -495,7 +512,7 @@ MyECommerceRecommendation/***engine.json***:
 The parameters `appName`, `unseenOnly`, `seenEvents` and `similarEvents` are used during `predict()`, which will be explained later.
 
 PredictionIO will automatically loads these values into the constructor `ap`,
-which has a corresponding case case `ECommAlgorithmParams`.
+which has a corresponding case class `ECommAlgorithmParams`.
 
 The `seed` parameter is an optional parameter, which is used by MLlib ALS algorithm internally to generate random values. If the `seed` is not specified, current system time would be used and hence each train may produce different reuslts. Specify a fixed value for the `seed` if you want to have deterministic result (For example, when you are testing).
 

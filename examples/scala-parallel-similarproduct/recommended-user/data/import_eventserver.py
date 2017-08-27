@@ -1,3 +1,20 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 """
 Import sample data for recommended user engine
 """
@@ -11,13 +28,13 @@ SEED = 3
 def import_events(client):
   random.seed(SEED)
   count = 0
-  print client.get_status()
-  print "Importing data..."
+  print(client.get_status())
+  print("Importing data...")
 
-  # generate 10 users, with user ids u1,u2,....,u50
+  # generate 50 users, with user ids u1,u2,....,u50
   user_ids = ["u%s" % i for i in range(1, 51)]
   for user_id in user_ids:
-    print "Set user", user_id
+    print("Set user", user_id)
     client.create_event(
       event="$set",
       entity_type="user",
@@ -38,7 +55,7 @@ def import_events(client):
       )
       count += 1
 
-  print "%s events are imported." % count
+  print("%s events are imported." % count)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(
@@ -47,7 +64,7 @@ if __name__ == '__main__':
   parser.add_argument('--url', default="http://localhost:7070")
 
   args = parser.parse_args()
-  print args
+  print(args)
 
   client = predictionio.EventClient(
     access_key=args.access_key,

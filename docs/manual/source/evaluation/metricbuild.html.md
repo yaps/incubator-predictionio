@@ -2,29 +2,46 @@
 title: Building Evaluation Metrics
 ---
 
-PredictionIO enables developer to implement evaluation custom evaluation 
-metric with just a few lines of code. 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+PredictionIO enables developer to implement evaluation custom evaluation
+metric with just a few lines of code.
 We illustrate it with [the classification
 template](/templates/classification/quickstart/).
 
 ## Overview
 
-A simplistic form of metric is a function which takes a 
+A simplistic form of metric is a function which takes a
 `(Query, PredictedResult, ActualResult)`-tuple (*QPA-tuple*) as input
-and return a score. 
+and return a score.
 Exploiting this properties allows us to implement custom metric with a single
 line of code (plus some boilerplates). We demonstate this with two metrics:
 accuracy and precision.
 
 <!--
-(Note: This simple form may not be able to handle metrics which require 
+(Note: This simple form may not be able to handle metrics which require
 multi-stage computation, for example root-mean-square-error.)
 -->
 
 
 ## Example 1: Accuracy Metric
 
-Accuracy is a metric capturing 
+Accuracy is a metric capturing
 the portion of correct prediction among all test data points. A way
 to model this is for each correct QPA-tuple, we give a score of 1.0 and
 otherwise 0.0, then we take an average of all tuple scores.
@@ -39,19 +56,19 @@ Line 5 below is the custom calculation.
 case class Accuracy
   extends AverageMetric[EmptyEvaluationInfo, Query, PredictedResult, ActualResult] {
   def calculate(query: Query, predicted: PredictedResult, actual: ActualResult)
-  : Double = 
+  : Double =
     (if (predicted.label == actual.label) 1.0 else 0.0)
 }
 ```
 
-Once we define a metric, we tell PredictionIO we are using it in the `Evaluation` 
+Once we define a metric, we tell PredictionIO we are using it in the `Evaluation`
 object. We can run the following command to kick start the evaluation.
 
 ```
 $ pio build
 ...
 $ pio eval org.template.classification.AccuracyEvaluation \
-    org.template.classification.EngineParamsList 
+    org.template.classification.EngineParamsList
 ...
 ```
 
@@ -60,8 +77,8 @@ $ pio eval org.template.classification.AccuracyEvaluation \
 
 ## Example 2: Precision Metric
 
-Precision is a metric for binary classifier 
-capturing the portion of correction prediction among 
+Precision is a metric for binary classifier
+capturing the portion of correction prediction among
 all *positive* predictions.
 We don't care about the cases where the QPA-tuple gives a negative prediction.
 (Recall that a binary classifier only provide two output values: *positive* and
@@ -71,7 +88,7 @@ The following table illustrates all four cases:
 | PredictedResult | ActualResult | Value |
 | :----: | :----: | :----: |
 | Positive | Positive | 1.0 |
-| Positive | Negative | 0.0 | 
+| Positive | Negative | 0.0 |
 | Negative | Positive | Don't care |
 | Negative | Negative | Don't care |
 
@@ -84,7 +101,7 @@ specify *don't care* values as `None`. It only aggregates the non-None values.
 Lines 3 to 4 is the method signature of `calcuate` method. The key difference
 is that the return value is a `Option[Double]`, in contrast to `Double` for
 `AverageMetric`. This class only computes the average of `Some(.)` results.
-Lines 5 to 13 are the actual logic. The first `if` factors out the 
+Lines 5 to 13 are the actual logic. The first `if` factors out the
 positively predicted case, and the computation is simliar to the accuracy
 metric. The negatively predicted case are the *don't cares*, which we return
 `None`.
@@ -124,7 +141,7 @@ separation of concern when we conduct hyperparameter tuning.
 $ pio build
 ...
 $ pio eval org.template.classification.PrecisionEvaluation \
-    org.template.classification.EngineParamsList 
+    org.template.classification.EngineParamsList
 ...
 [INFO] [CoreWorkflow$] Starting evaluation instance ID: SMhzYbJ9QgKkD0fQzTA7MA
 ...
@@ -149,7 +166,7 @@ Optimal Engine Params:
   },
   "preparatorParams":{
     "":{
-      
+
     }
   },
   "algorithmParamsList":[
@@ -161,7 +178,7 @@ Optimal Engine Params:
   ],
   "servingParams":{
     "":{
-      
+
     }
   }
 }
@@ -171,4 +188,3 @@ Metrics:
 
 (See MyClassification/src/main/scala/***PrecisionEvaluation.scala*** for
 the full usage.)
-

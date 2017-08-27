@@ -2,6 +2,23 @@
 title: PredictionIO - A Quick Intro
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 ## Overview
 
 PredictionIO consist of the following components:
@@ -40,7 +57,7 @@ Engine is responsible for making prediction.
 It contains one or more machine learning algorithms. An engine reads training data and build predictive model(s).
 It is then deployed as a web service. A deployed engine responds to prediction queries from your application through REST API in real-time.
 
-PredictionIO's [template gallery](http://templates.prediction.io/) offers Engine Templates for all kinds of machine learning tasks.
+PredictionIO's [template gallery](/gallery/template-gallery) offers Engine Templates for all kinds of machine learning tasks.
 You can easily create one or more engines from these templates .
 
 The components of a template, namely **Data Source**, **Data Preparator**, **Algorithm(s)**, and **Serving**, are all [customizable](/start/customize/) for your specific needs.

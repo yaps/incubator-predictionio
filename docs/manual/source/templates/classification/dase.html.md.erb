@@ -2,6 +2,23 @@
 title: DASE Components Explained (Classification)
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 <%= partial 'shared/dase/dase',
 locals: {
   template_name: 'Classification Engine Template',
@@ -19,11 +36,11 @@ In MyClassification/src/main/scala/***Engine.scala***, the `Query` case class
 defines the format of **query**, such as `{ "attr0":4, "attr1":3, "attr2":8 }`:
 
 ```scala
-class Query(
-  val attr0 : Double,
-  val attr1 : Double,
-  val attr2 : Double
-) extends Serializable
+case class Query(
+  attr0 : Double,
+  attr1 : Double,
+  attr2 : Double
+)
 
 ```
 
@@ -31,9 +48,9 @@ The `PredictedResult` case class defines the format of **predicted result**,
 such as `{"label":2.0}`:
 
 ```scala
-class PredictedResult(
+case class PredictedResult(
   val label: Double
-) extends Serializable
+)
 ```
 
 Finally, `ClassificationEngine` is the Engine Factory that defines the
@@ -219,7 +236,7 @@ MyClassification/***engine.json***:
 ```
 
 PredictionIO will automatically loads these values into the constructor `ap`,
-which has a corresponding case case `AlgorithmParams`:
+which has a corresponding case class `AlgorithmParams`:
 
 ```scala
 case class AlgorithmParams(
@@ -244,7 +261,7 @@ label of the item represented by this feature vector.
     val label = model.predict(Vectors.dense(
     	query.attr0, query.attr1, query.attr2
     ))
-    new PredictedResult(label)
+    PredictedResult(label)
   }
 ```
 

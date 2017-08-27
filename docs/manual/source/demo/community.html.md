@@ -1,10 +1,29 @@
 ---
-title: Demo Tutorials with PredictionIO
+title: Demo Tutorials with Apache PredictionIO (incubating)
 ---
 
-Here is a list of demo tutorials for PredictionIO.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
 
-INFO: If you want to showcase your demo app here, simply edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/community/showcase.html.md) and submit a pull request.
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Here is a list of demo tutorials for Apache PredictionIO (incubating).
+
+INFO: If you want to showcase your demo app here, simply edit [this
+page](https://github.com/apache/incubator-predictionio/blob/livedoc/docs/manual/source/community/showcase.html.md)
+and submit a pull request.
 
 
 ## Tapster iOS Demo
@@ -37,7 +56,7 @@ URL: http://ontappapp.com/
 Writeup: http://victorleungtw.com/prediction-io/
 
 
-## Yelpio 
+## Yelpio
 
 <img src="/images/showcase/yelpio-70x70.png" alt="OnTapp" class="static" />
 

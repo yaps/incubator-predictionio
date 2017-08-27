@@ -2,6 +2,23 @@
 title: Events Modeling
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 This section explains how to model your application data as events.
 
 **Entity**: it's the real world object involved in the events. The entity may perform the events, or interact with other entity (which became `targetEntity` in an event).
@@ -87,7 +104,7 @@ For example, setting entity `user-1`'s properties `birthday` and `address`:
 }
 ```
 
-**Note** that the properties values of the entity will be aggregated based on these special events and the eventTime. The state of the entity is different depending on the time you are looking at the data. In engine's DataSource, you can use [PEventStore.aggregateProperties() API](https://docs.prediction.io/api/current/#io.prediction.data.store.PEventStore$) to retrieve the state of entity's properties (based on time).
+**Note** that the properties values of the entity will be aggregated based on these special events and the eventTime. The state of the entity is different depending on the time you are looking at the data. In engine's DataSource, you can use [PEventStore.aggregateProperties() API](https://predictionio.incubator.apache.org/api/current/#org.apache.predictionio.data.store.PEventStore$) to retrieve the state of entity's properties (based on time).
 
 NOTE: Although it doesn't hurt to import duplicated special events for an entity (exactly same properties) into event server (it just means that the entity changes to the same state as before and new duplicated event provides no new information about the user), it could waste storage space.
 
@@ -127,7 +144,7 @@ Date: Tue, 02 Jun 2015 23:13:58 GMT
 Content-Type: application/json; charset=UTF-8
 Content-Length: 57
 
-{"eventId":"PVjOIP6AJ5PgsiGQW6pgswAAAUhc7EwZpCfSj5bS5yg"}a
+{"eventId":"PVjOIP6AJ5PgsiGQW6pgswAAAUhc7EwZpCfSj5bS5yg"}
 ```
 
 After this eventTime, user-2 is created and has properties of a = 3 and b = 4.
@@ -223,7 +240,7 @@ NOTE: Note that you should quote the entire URL by using single or double quotes
 
 You should see all events being created for this user-2.
 
-Now, let's retrieve the user-2's properties using the [PEventStore API](https://docs.prediction.io/api/current/#io.prediction.data.store.PEventStore$).
+Now, let's retrieve the user-2's properties using the [PEventStore API](https://predictionio.incubator.apache.org/api/current/#org.apache.predictionio.data.store.PEventStore$).
 
 First, start `pio-shell` by running:
 
@@ -246,14 +263,14 @@ Run the following code in PIO shell (Replace `"MyTestApp"` with your app name):
 
 ```scala
 scala> val appName="MyTestApp"
-scala> import io.prediction.data.store.PEventStore
+scala> import org.apache.predictionio.data.store.PEventStore
 scala> PEventStore.aggregateProperties(appName=appName, entityType="user")(sc).collect()
 ```
 
 This command is using PEventStore to aggregate the user properties as a Map of user Id and the PropertyMap. `collect()` will return the data as array. You should see the following output at the end, which indicates there is user id 2 with empty properties because that's the state of user 2 with all imported events taken into account.
 
 ```
-res0: Array[(String, io.prediction.data.storage.PropertyMap)] =
+res0: Array[(String, org.apache.predictionio.data.storage.PropertyMap)] =
 Array((2,PropertyMap(Map(), 2014-09-09T16:17:42.937-08:00, 2014-09-13T16:17:42.143-08:00)))
 ```
 
@@ -269,7 +286,7 @@ scala> PEventStore.aggregateProperties(appName=appName, entityType="user", until
 You should see the following ouptut and the aggregated properties matches what we expected as described earlier (right befor event 3): user-2 has properties of a = 3, b = 5 and c = 6.
 
 ```
-res2: Array[(String, io.prediction.data.storage.PropertyMap)] =
+res2: Array[(String, org.apache.predictionio.data.storage.PropertyMap)] =
 Array((2,PropertyMap(Map(b -> JInt(5), a -> JInt(3), c -> JInt(6)), 2014-09-09T16:17:42.937-08:00, 2014-09-10T13:12:04.937-08:00))
 ```
 
@@ -345,4 +362,4 @@ The order in the response array is corresponding to the order of the request arr
     ]
 
 
-Notice that each subrequest receives a status responce. The limit of 50 events per batch requests is in line with Facebook, Mixpanel, SegmentIO and other event syncs that accept batches.
+Notice that each subrequest receives a status response. The limit of 50 events per batch requests is in line with Facebook, Mixpanel, SegmentIO and other event syncs that accept batches.

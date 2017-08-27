@@ -1,24 +1,32 @@
 #!/usr/bin/env bash
 
-# Copyright 2015 TappingStone, Inc.
 #
-# This script will install PredictionIO onto your computer!
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
 #
-# Documentation: http://docs.prediction.io
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
-# License: http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 OS=`uname`
-PIO_VERSION=0.9.6
-SPARK_VERSION=1.6.0
+SPARK_VERSION=1.6.3
 # Looks like support for Elasticsearch 2.0 will require 2.0 so deferring
-ELASTICSEARCH_VERSION=1.7.3
-HBASE_VERSION=1.1.2
-POSTGRES_VERSION=9.4-1204.jdbc41
-MYSQL_VERSION=5.1.37
+ELASTICSEARCH_VERSION=1.7.5
+HBASE_VERSION=1.2.2
+POSTGRES_VERSION=42.0.0
+MYSQL_VERSION=5.1.41
 PIO_DIR=$HOME/PredictionIO
 USER_PROFILE=$HOME/.profile
-PIO_FILE=PredictionIO-${PIO_VERSION}.tar.gz
+PIO_FILE=PredictionIO-*.tar.gz
 TEMP_DIR=/tmp
 
 DISTRO_DEBIAN="Debian/Ubuntu"
@@ -26,6 +34,7 @@ DISTRO_OTHER="Other"
 
 PGSQL="PostgreSQL"
 MYSQL="MySQL"
+ES_PGSQL="Elasticsearch + PostgreSQL"
 ES_HB="Elasticsearch + HBase"
 
 # Ask a yes/no question, with a default of "yes".
@@ -46,7 +55,7 @@ confirm () {
   esac
 }
 
-echo -e "\033[1;32mWelcome to PredictionIO $PIO_VERSION!\033[0m"
+echo -e "\033[1;32mWelcome to PredictionIO !\033[0m"
 
 # Detect OS
 if [[ "$OS" = "Darwin" ]]; then
@@ -93,8 +102,9 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   # Java Install
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
+  sudo add-apt-repository ppa:openjdk-r/ppa
   sudo apt-get update
-  sudo apt-get install openjdk-7-jdk libgfortran3 -y
+  sudo apt-get install openjdk-8-jdk libgfortran3 -y
 
   echo -e "\033[1;32mJava install done!\033[0m"
 
@@ -126,8 +136,9 @@ elif [[ "$1" == "-y" ]]; then
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
   # todo: make java installation platform independent
+  sudo add-apt-repository ppa:openjdk-r/ppa
   sudo apt-get update
-  sudo apt-get install openjdk-7-jdk libgfortran3 python-pip -y
+  sudo apt-get install openjdk-8-jdk libgfortran3 python-pip -y
   sudo pip install predictionio
 
   echo -e "\033[1;32mJava install done!\033[0m"
@@ -143,13 +154,16 @@ else
     read -e -p "Vendor path ($pio_dir/vendors): " vendors_dir
     vendors_dir=${vendors_dir:-$pio_dir/vendors}
 
-    echo -e "\033[1mPlease choose between the following sources (1, 2 or 3):\033[0m"
-    select source_setup in "$PGSQL" "$MYSQL" "$ES_HB"; do
+    echo -e "\033[1mPlease choose between the following sources (1, 2, 3 or 4):\033[0m"
+    select source_setup in "$PGSQL" "$MYSQL" "$ES_PGSQL" "$ES_HB"; do
       case ${source_setup} in
         "$PGSQL")
           break
           ;;
         "$MYSQL")
+          break
+          ;;
+        "$ES_PGSQL")
           break
           ;;
         "$ES_HB")
@@ -159,24 +173,6 @@ else
           ;;
       esac
     done
-
-    if confirm "Receive updates?"; then
-      guess_email=''
-      if hash git 2>/dev/null; then
-        # Git installed!
-        guess_email=$(git config --global user.email)
-      fi
-
-      if [ -n "${guess_email}" ]; then
-        read -e -p "Email (${guess_email}): " email
-      else
-        read -e -p "Enter email: " email
-      fi
-      email=${email:-$guess_email}
-
-      url="https://direct.prediction.io/$PIO_VERSION/install.json/install/install/$email/"
-      curl --silent ${url} > /dev/null
-    fi
 
     spark_dir=${vendors_dir}/spark-${SPARK_VERSION}
     elasticsearch_dir=${vendors_dir}/elasticsearch-${ELASTICSEARCH_VERSION}
@@ -195,6 +191,11 @@ else
         ;;
       "$MYSQL")
         # MySQL installed by apt-get so no path is printed beforehand
+        break
+        ;;
+      "$ES_PGSQL")
+        # PostgreSQL installed by apt-get so no path is printed beforehand
+        echo "Elasticsearch: $elasticsearch_dir"
         break
         ;;
       "$ES_HB")
@@ -233,8 +234,9 @@ else
         echo -e "\033[33mThis script requires superuser access!\033[0m"
         echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
 
+        sudo add-apt-repository ppa:openjdk-r/ppa
         sudo apt-get update
-        sudo apt-get install openjdk-7-jdk libgfortran3 python-pip -y
+        sudo apt-get install openjdk-8-jdk libgfortran3 python-pip -y
         sudo pip install predictionio
 
         echo -e "\033[1;32mJava install done!\033[0m"
@@ -275,14 +277,27 @@ echo "JAVA_HOME is now set to: $JAVA_HOME"
 
 # PredictionIO
 echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $pio_dir"
+
 cd ${TEMP_DIR}
-if [[ ! -e ${PIO_FILE} ]]; then
+
+files=$(ls PredictionIO*.tar.gz 2> /dev/null | wc -l)
+
+if [[ $files == 0 ]]; then
   echo "Downloading PredictionIO..."
-  curl -OL https://github.com/PredictionIO/PredictionIO/releases/download/v${PIO_VERSION}/${PIO_FILE}
+  curl -L https://codeload.github.com/apache/incubator-predictionio/tar.gz/master > incubator-predictionio-master.tar.gz
+
+  tar zxf incubator-predictionio-master.tar.gz
+
+  mv incubator-predictionio-master PredictionIO
+
+  sh PredictionIO/make-distribution.sh
+  cp PredictionIO/${PIO_FILE} ${TEMP_DIR}
+  rm -r PredictionIO
 fi
+
 tar zxf ${PIO_FILE}
 rm -rf ${pio_dir}
-mv PredictionIO-${PIO_VERSION} ${pio_dir}
+mv PredictionIO*/ ${pio_dir}
 
 if [[ $USER ]]; then
   chown -R $USER ${pio_dir}
@@ -294,13 +309,13 @@ echo "export PATH=\$PATH:$pio_dir/bin" >> ${USER_PROFILE}
 
 echo -e "\033[1;32mPredictionIO setup done!\033[0m"
 
-mkdir ${vendors_dir}
+mkdir -p ${vendors_dir}
 
 # Spark
 echo -e "\033[1;36mStarting Spark setup in:\033[0m $spark_dir"
 if [[ ! -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
   echo "Downloading Spark..."
-  curl -O http://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
+  curl -O http://www-us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
 fi
 tar xf spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
 rm -rf ${spark_dir}
@@ -311,11 +326,10 @@ ${SED_CMD} "s|SPARK_HOME=.*|SPARK_HOME=$spark_dir|g" ${pio_dir}/conf/pio-env.sh
 
 echo -e "\033[1;32mSpark setup done!\033[0m"
 
-case $source_setup in
-  "$PGSQL")
-    if [[ ${distribution} = "$DISTRO_DEBIAN" ]]; then
+installPGSQL () {
+  if [[ ${distribution} = "$DISTRO_DEBIAN" ]]; then
       echo -e "\033[1;36mInstalling PostgreSQL...\033[0m"
-      sudo apt-get install postgresql -y
+      sudo apt-get install postgresql-9.4 -y
       echo -e "\033[1;36mPlease use the default password 'pio' when prompted to enter one\033[0m"
       sudo -u postgres createdb pio
       sudo -u postgres createuser -P pio
@@ -323,10 +337,43 @@ case $source_setup in
     else
       echo -e "\033[1;31mYour distribution not yet supported for automatic install :(\033[0m"
       echo -e "\033[1;31mPlease install PostgreSQL manually!\033[0m"
-      exit 3
     fi
     curl -O https://jdbc.postgresql.org/download/postgresql-${POSTGRES_VERSION}.jar
-    mv postgresql-${POSTGRES_VERSION}.jar ${PIO_DIR}/lib/
+    mv postgresql-${POSTGRES_VERSION}.jar ${pio_dir}/lib/
+
+    echo -e "\033[1;32mPGSQL setup done!\033[0m"
+}
+
+installES() {
+    echo -e "\033[1;36mStarting Elasticsearch setup in:\033[0m $elasticsearch_dir"
+    if [[ -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
+      if confirm "Delete existing elasticsearch-$ELASTICSEARCH_VERSION.tar.gz?"; then
+        rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
+      fi
+    fi
+    if [[ ! -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
+      echo "Downloading Elasticsearch..."
+      curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
+    fi
+    tar zxf elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
+    rm -rf ${elasticsearch_dir}
+    mv elasticsearch-${ELASTICSEARCH_VERSION} ${elasticsearch_dir}
+
+    echo "Updating: $elasticsearch_dir/config/elasticsearch.yml"
+    echo 'network.host: 127.0.0.1' >> ${elasticsearch_dir}/config/elasticsearch.yml
+}
+
+case $source_setup in
+  "$PGSQL")
+    installPGSQL
+    ;;
+  "$ES_PGSQL")
+    installES
+    installPGSQL
+    echo "Updating: $pio_dir/conf/pio-env.sh"
+    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|# PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE|PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|# PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=.*|PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=$elasticsearch_dir|" ${pio_dir}/conf/pio-env.sh
     ;;
   "$MYSQL")
     if [[ ${distribution} = "$DISTRO_DEBIAN" ]]; then
@@ -346,22 +393,11 @@ case $source_setup in
       exit 4
     fi
     curl -O http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.37/mysql-connector-java-${MYSQL_VERSION}.jar
-    mv mysql-connector-java-${MYSQL_VERSION}.jar ${PIO_DIR}/lib/
+    mv mysql-connector-java-${MYSQL_VERSION}.jar ${pio_dir}/lib/
     ;;
   "$ES_HB")
     # Elasticsearch
-    echo -e "\033[1;36mStarting Elasticsearch setup in:\033[0m $elasticsearch_dir"
-    if [[ ! -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
-      echo "Downloading Elasticsearch..."
-      curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
-    fi
-    tar zxf elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
-    rm -rf ${elasticsearch_dir}
-    mv elasticsearch-${ELASTICSEARCH_VERSION} ${elasticsearch_dir}
-
-    echo "Updating: $elasticsearch_dir/config/elasticsearch.yml"
-    echo 'network.host: 127.0.0.1' >> ${elasticsearch_dir}/config/elasticsearch.yml
-
+    installES
     echo "Updating: $pio_dir/conf/pio-env.sh"
     ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH|" ${pio_dir}/conf/pio-env.sh
     ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=LOCALFS|" ${pio_dir}/conf/pio-env.sh
@@ -370,7 +406,6 @@ case $source_setup in
     ${SED_CMD} "s|# PIO_STORAGE_SOURCES_LOCALFS|PIO_STORAGE_SOURCES_LOCALFS|" ${pio_dir}/conf/pio-env.sh
     ${SED_CMD} "s|# PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE|PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE|" ${pio_dir}/conf/pio-env.sh
     ${SED_CMD} "s|# PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=.*|PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=$elasticsearch_dir|" ${pio_dir}/conf/pio-env.sh
-
     echo -e "\033[1;32mElasticsearch setup done!\033[0m"
 
     # HBase
@@ -431,8 +466,8 @@ echo -e "\033[1;32mInstallation done!\033[0m"
 
 
 echo "--------------------------------------------------------------------------------"
-echo -e "\033[1;32mInstallation of PredictionIO $PIO_VERSION complete!\033[0m"
-echo -e "\033[1;32mPlease follow documentation at http://docs.prediction.io/start/download/ to download the engine template based on your needs\033[0m"
+echo -e "\033[1;32mInstallation of PredictionIO complete!\033[0m"
+echo -e "\033[1;32mPlease follow documentation at http://predictionio.incubator.apache.org/start/download/ to download the engine template based on your needs\033[0m"
 echo -e
 echo -e "\033[1;33mCommand Line Usage Notes:\033[0m"
 if [[ ${source_setup} = $ES_HB ]]; then
@@ -446,5 +481,6 @@ if [[ ${source_setup} = $ES_HB ]]; then
   echo -e "To stop PredictionIO and dependencies, run: '\033[1mpio-stop-all\033[0m'"
 fi
 echo -e ""
-echo -e "Please report any problems to: \033[1;34msupport@prediction.io\033[0m"
+echo -e "Please report any problems to the user mailing list."
+echo -e "User mailing list instructions: \033[1;34mhttp://predictionio.incubator.apache.org/support/\033[0m"
 echo "--------------------------------------------------------------------------------"

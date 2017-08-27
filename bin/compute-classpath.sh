@@ -1,32 +1,26 @@
 #!/usr/bin/env bash
 
-# Copyright 2015 TappingStone, Inc.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-SCALA_VERSION=2.10
+#
 
 # Figure out where PredictionIO is installed
 FWDIR="$(cd `dirname $0`/..; pwd)"
 
 . ${FWDIR}/bin/load-pio-env.sh
-
-# Build up classpath
-CLASSPATH="${FWDIR}/conf"
-
-CLASSPATH="$CLASSPATH:${FWDIR}/plugins/*"
-
-ASSEMBLY_DIR="${FWDIR}/assembly"
 
 if [ -n "$JAVA_HOME" ]; then
   JAR_CMD="$JAVA_HOME/bin/jar"
@@ -38,12 +32,19 @@ fi
 if [ -f "${FWDIR}/RELEASE" ]; then
   assembly_folder="${FWDIR}"/lib
 else
-  assembly_folder="${ASSEMBLY_DIR}"
+  assembly_folder="${FWDIR}"/assembly/src/universal/lib
 fi
 
-ASSEMBLY_JAR=$(ls "${assembly_folder}"/pio-assembly*.jar 2>/dev/null)
+MAIN_JAR=$(ls "${assembly_folder}"/pio-assembly*.jar 2>/dev/null)
+DATA_JARS=$(ls "${assembly_folder}"/spark/pio-data-*assembly*.jar 2>/dev/null)
+# Comma-separated list of assembly jars for submitting to spark-shell
+ASSEMBLY_JARS=$(printf "${MAIN_JAR}\n${DATA_JARS}" | paste -sd "," -)
 
-CLASSPATH="$CLASSPATH:${ASSEMBLY_JAR}"
+# Build up classpath
+CLASSPATH="${PIO_CONF_DIR}"
+CLASSPATH="$CLASSPATH:${FWDIR}/plugins/*"
+CLASSPATH="$CLASSPATH:${assembly_folder}/spark/*"
+CLASSPATH="$CLASSPATH:${MAIN_JAR}"
 
 # Add hadoop conf dir if given -- otherwise FileSystem.*, etc fail ! Note, this
 # assumes that there is either a HADOOP_CONF_DIR or YARN_CONF_DIR which hosts
@@ -62,10 +63,11 @@ if [ -n "$ES_CONF_DIR" ]; then
 fi
 if [ -n "$POSTGRES_JDBC_DRIVER" ]; then
   CLASSPATH="$CLASSPATH:$POSTGRES_JDBC_DRIVER"
+  ASSEMBLY_JARS="$ASSEMBLY_JARS,$POSTGRES_JDBC_DRIVER"
 fi
 if [ -n "$MYSQL_JDBC_DRIVER" ]; then
   CLASSPATH="$CLASSPATH:$MYSQL_JDBC_DRIVER"
+  ASSEMBLY_JARS="$ASSEMBLY_JARS,$MYSQL_JDBC_DRIVER"
 fi
-
 
 echo "$CLASSPATH"

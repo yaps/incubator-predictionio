@@ -2,6 +2,23 @@
 title: Batch Persistable Evaluator (Recommendation)
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 This how-to tutorial would explain how you can also use `$pio eval` to persist predicted result for a batch of queries. Please read the [Evaluation](/templates/recommendation/evaluation/) to understand the usage of DataSoure's `readEval()` and the Evaluation component first.
 
 WARNING: This tutorial is based on some experimental and developer features, which may be changed in future release.
@@ -60,15 +77,15 @@ Note that output directory is specified by the variable `outputDir`.
 ```scala
 package org.template.recommendation
 
-import io.prediction.controller.EmptyEvaluationInfo
-import io.prediction.controller.Engine
-import io.prediction.controller.EngineParams
-import io.prediction.controller.EngineParamsGenerator
-import io.prediction.controller.Evaluation
-import io.prediction.controller.Params
-import io.prediction.core.BaseEvaluator
-import io.prediction.core.BaseEvaluatorResult
-import io.prediction.workflow.WorkflowParams
+import org.apache.predictionio.controller.EmptyEvaluationInfo
+import org.apache.predictionio.controller.Engine
+import org.apache.predictionio.controller.EngineParams
+import org.apache.predictionio.controller.EngineParamsGenerator
+import org.apache.predictionio.controller.Evaluation
+import org.apache.predictionio.controller.Params
+import org.apache.predictionio.core.BaseEvaluator
+import org.apache.predictionio.core.BaseEvaluatorResult
+import org.apache.predictionio.workflow.WorkflowParams
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -153,9 +170,9 @@ Modify the appName parameter in `DataSourceParams` to match your app name.
 ```scala
 package org.template.recommendation
 
-import io.prediction.controller.EngineParamsGenerator
-import io.prediction.controller.EngineParams
-import io.prediction.controller.Evaluation
+import org.apache.predictionio.controller.EngineParamsGenerator
+import org.apache.predictionio.controller.EngineParams
+import org.apache.predictionio.controller.Evaluation
 
 object BatchEvaluation extends Evaluation {
   // Define Engine and Evaluator used in Evaluation

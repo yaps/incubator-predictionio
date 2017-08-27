@@ -1,12 +1,30 @@
-package org.template.recommendeduser
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import grizzled.slf4j.Logger
-import io.prediction.controller.{EmptyActualResult, EmptyEvaluationInfo, PDataSource, Params}
-import io.prediction.data.storage.Storage
+package org.apache.predictionio.examples.similarproduct
+
+import org.apache.predictionio.controller.{EmptyActualResult, EmptyEvaluationInfo, PDataSource, Params}
+import org.apache.predictionio.data.store.PEventStore
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-case class DataSourceParams(appId: Int) extends Params
+import grizzled.slf4j.Logger
+
+case class DataSourceParams(appName: String) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -16,11 +34,10 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
 
     // create a RDD of (entityID, User)
-    val usersRDD: RDD[(String, User)] = eventsDb.aggregateProperties(
-      appId = dsp.appId,
+    val usersRDD: RDD[(String, User)] = PEventStore.aggregateProperties(
+      appName = dsp.appName,
       entityType = "user"
     )(sc).map { case (entityId, properties) =>
       val user = try {
@@ -36,8 +53,8 @@ class DataSource(val dsp: DataSourceParams)
     }.cache()
 
     // get all "user" "follow" "followedUser" events
-    val followEventsRDD: RDD[FollowEvent] = eventsDb.find(
-      appId = dsp.appId,
+    val followEventsRDD: RDD[FollowEvent] = PEventStore.find(
+      appName = dsp.appName,
       entityType = Some("user"),
       eventNames = Some(List("follow")),
       // targetEntityType is optional field of an event.

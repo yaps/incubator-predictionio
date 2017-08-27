@@ -2,11 +2,28 @@
 title: Quick Start - Vanilla Engine Template
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 ## Overview
 
 The purpose of the Vanilla template is for developing new engine when you find other engine templates do not fit your needs. This template provides a skeleton to kick start new engine development.
 
-By default, it simply reads the "EVENT" involving "ENTITY_TYPE" and "TARGET_ENTITY_TYPE". The Algorithm counts the number of events and multiple it by the algorithm parameter and store it as Model. During serving, the Query is prefixed with the Model and return as PredictedsResult.
+By default, it simply reads the "EVENT" involving "ENTITY_TYPE" and "TARGET_ENTITY_TYPE". The Algorithm counts the number of events and multiple it by the algorithm parameter and store it as Model. During serving, the Query is prefixed with the Model and return as PredictedResult.
 
 
 ## Usage
@@ -29,7 +46,7 @@ No special event requirement
 
 ## 2. Create a new Engine from an Engine Template
 
-<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyNewEngine', template_name: 'Vanilla Engine Template', template_repo: 'template-scala-parallel-vanilla' } %>
+<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyNewEngine', template_name: 'Vanilla Engine Template', template_repo: 'apache/incubator-predictionio-template-skeleton' } %>
 
 ## 3. Generate an App ID and Access Key
 
@@ -53,7 +70,7 @@ As long as the appId is valid, this Vanilla Engine template does not require eve
 
 Now, You can try to retrieve predicted results. The engine accepts JSON query with the field 'q': `{ "q" : "foo" }`. A prefix is added to the query data and return as PredictedResult.
 
-With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
+With the deployed engine running, open another terminal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
   <div data-tab="REST API" data-lang="json">
@@ -100,7 +117,7 @@ puts response
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 
-import io.prediction.EngineClient;
+import org.apache.predictionio.EngineClient;
 
 // create client object
 EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);

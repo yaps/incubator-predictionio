@@ -2,6 +2,22 @@
 title: Developing Engines with IntelliJ IDEA
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 
 ## Prerequisites
 
@@ -73,8 +89,8 @@ automatically or prompt you to refresh.
 
 ### Dependencies
 
-IntelliJ has the annoying tendency to drop some dependencies when you refresh your build.sbt after any changes. 
-To avoid this we put any jars that must be available at runtime into a separate empty module in the project then 
+IntelliJ has the annoying tendency to drop some dependencies when you refresh your build.sbt after any changes.
+To avoid this we put any jars that must be available at runtime into a separate empty module in the project then
 we make the main engine project depend on this dummy module for runtime classes.
 
 Right click on the project and click *Open Module Settings*. In the second modules column hit **+** and create a
@@ -93,7 +109,7 @@ change the scope of the jars to **runtime**:
 
 ![Create empty module and add dependencies](/images/intellij/pio-runtime-jar-deps.png)
 
-Now make your engine module dependent on the pio-runtime-jars module for scope = runtime.  
+Now make your engine module dependent on the pio-runtime-jars module for scope = runtime.
 
 ![Create empty module and add dependencies](/images/intellij/pio-runtime-jars.png)
 
@@ -108,7 +124,7 @@ Configurations...*. Click on the **+** button and select *Application*. Name it
 `pio train` and put in the following.
 
 ```
-Main class: io.prediction.workflow.CreateWorkflow
+Main class: org.apache.predictionio.workflow.CreateWorkflow
 VM options: -Dspark.master=local -Dlog4j.configuration=file:/**replace_with_your_PredictionIO_path**/conf/log4j.properties
 Program arguments: --engine-id dummy --engine-version dummy --engine-variant engine.json
 ```
@@ -156,7 +172,7 @@ For `pio deploy`, simply duplicate the previous configuration and replace with
 the following.
 
 ```
-Main class: io.prediction.workflow.CreateServer
+Main class: org.apache.predictionio.workflow.CreateServer
 Program Arguments: --engineInstanceId **replace_with_the_id_from_pio_train**
 ```
 
@@ -187,10 +203,10 @@ response is created or run the query with no breakpoints.
 
 ## Loading a Template Into Intellij IDEA
 
-To customize an existing [template](http://templates.prediction.io) using Intellij IDEA, first pull it from the template gallery:
+To customize an existing [template](/gallery/template-gallery) using Intellij IDEA, first pull it from the template gallery:
 
 ```bash
-$ pio template get <Template Source> <New Engine Directory>
+$ git clone <Template Source> <New Engine Directory>
 ```
 
 Now, before opening the template with Intellij, run the following command in the new engine template directory

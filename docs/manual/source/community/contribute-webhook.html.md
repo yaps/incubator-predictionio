@@ -2,7 +2,25 @@
 title:  Contribute a Webhooks Connector
 ---
 
-NOTE: Please check out the [latest develop branch](https://github.com/PredictionIO/PredictionIO).
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+NOTE: Please check out the [latest develop
+branch](https://github.com/apache/incubator-predictionio).
 
 Event server can collect data from other third-party sites or software through their webhooks services (for example, SegmentIO, MailChimp). To support that, a *Webhooks Connector* for the third-party data is needed to be integrated into Event Server. The job of the *Webhooks Connector* is as simply as converting the third-party data into Event JSON. You can find an example below.
 
@@ -11,10 +29,10 @@ Currently we support two types of connectors: `JsonConnector` and `FormConnector
 **JsonConnector**:
 
 ```scala
-package io.prediction.data.webhooks
+package org.apache.predictionio.data.webhooks
 
 /** Connector for Webhooks connection */
-private[prediction] trait JsonConnector {
+private[predictionio] trait JsonConnector {
 
   /** Convert from original JObject to Event JObject
     * @param data original JObject recevived through webhooks
@@ -38,11 +56,11 @@ Note that you may collect Webhooks data into default channel (without the `chann
 **FormConnector**:
 
 ```scala
-package io.prediction.data.webhooks
+package org.apache.predictionio.data.webhooks
 
 /** Connector for Webhooks connection with Form submission data format
   */
-private[prediction] trait FormConnector {
+private[predictionio] trait FormConnector {
 
   /** Convert from original Form submission data to Event JObject
     * @param data Map of key-value pairs in String type received through webhooks
@@ -93,7 +111,7 @@ Because the data sent by this third-party "ExampleJson" site is in JSON format, 
 
 
 ```scala
-private[prediction] object ExampleJsonConnector extends JsonConnector {
+private[predictionio] object ExampleJsonConnector extends JsonConnector {
 
   implicit val json4sFormats: Formats = DefaultFormats
 
@@ -161,22 +179,28 @@ private[prediction] object ExampleJsonConnector extends JsonConnector {
 }
 ```
 
-You can find the complete example in [the GitHub repo](https://github.com/PredictionIO/PredictionIO/blob/develop/data/src/main/scala/io/prediction/data/webhooks/examplejson/ExampleJsonConnector.scala) and how to write [tests for the connector](https://github.com/PredictionIO/PredictionIO/blob/develop/data/src/test/scala/io/prediction/data/webhooks/examplejson/ExampleJsonConnectorSpec.scala).
+You can find the complete example in [the GitHub
+repo](https://github.com/apache/incubator-predictionio/blob/develop/data/src/main/scala/io/prediction/data/webhooks/examplejson/ExampleJsonConnector.scala)
+and how to write [tests for the
+connector](https://github.com/apache/incubator-predictionio/blob/develop/data/src/test/scala/io/prediction/data/webhooks/examplejson/ExampleJsonConnectorSpec.scala).
 
 
 Please put the connector code in a separate directory for each site. For example, code for segmentio connector should be in
 
 ```
-data/src/main/scala/io/prediction/data/webhooks/segmentio/
+data/src/main/scala/org.apache.predictionio/data/webhooks/segmentio/
 ```
 
 and tests should be in
 
 ```
-data/src/test/scala/io/prediction/data/webhooks/segmentio/
+data/src/test/scala/org.apache.predictionio/data/webhooks/segmentio/
 ```
 
-**For form-submission data**, you can find the comple example [the GitHub repo](https://github.com/PredictionIO/PredictionIO/blob/develop/data/src/main/scala/io/prediction/data/webhooks/exampleform/ExampleFormConnector.scala) and how to write [tests for the connector](https://github.com/PredictionIO/PredictionIO/blob/develop/data/src/test/scala/io/prediction/data/webhooks/exampleform/ExampleFormConnectorSpec.scala).
+**For form-submission data**, you can find the comple example [the GitHub
+repo](https://github.com/apache/incubator-predictionio/blob/develop/data/src/main/scala/io/prediction/data/webhooks/exampleform/ExampleFormConnector.scala)
+and how to write [tests for the
+connector](https://github.com/apache/incubator-predictionio/blob/develop/data/src/test/scala/io/prediction/data/webhooks/exampleform/ExampleFormConnectorSpec.scala).
 
 
 ## 2. Integrate the Connector into Event Server
@@ -184,13 +208,13 @@ data/src/test/scala/io/prediction/data/webhooks/segmentio/
 Once we have the connector implemented, we can add this to the EventServer so we can collect real-time data.
 
 Add the connector to [`WebhooksConnectors` object](
-https://github.com/PredictionIO/PredictionIO/blob/develop/data/src/main/scala/io/prediction/data/api/WebhooksConnectors.scala):
+https://github.com/apache/incubator-predictionio/blob/develop/data/src/main/scala/io/prediction/data/api/WebhooksConnectors.scala):
 
 ```scala
 
-import io.prediction.data.webhooks.examplejson.ExampleJsonConnector // ADDED
+import org.apache.predictionio.data.webhooks.examplejson.ExampleJsonConnector // ADDED
 
-private[prediction] object WebhooksConnectors {
+private[predictionio] object WebhooksConnectors {
 
   // Map of Connector Name to Connector
   val json: Map[String, JsonConnector] = Map(
@@ -218,4 +242,6 @@ For `FormConnector`, the URL doesn't have `.json`. For example,
 http://<EVENT SERVER URL>/webhooks/mailchimp?accessKey=<YOUR_ACCESS_KEY>&channel=<CHANNEL_NAME>
 ```
 
-That's it. Once you re-compile PredictionIO, you can send the ExampleJson data to the following URL and the data will be stored to the App of the corresponding Access Key.
+That's it. Once you re-compile Apache PredictionIO (incubating), you can send
+the ExampleJson data to the following URL and the data will be stored to the App
+of the corresponding Access Key.

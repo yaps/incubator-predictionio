@@ -2,17 +2,41 @@
 title: Channel
 ---
 
-Each App has a default channel (without name) which stores all incoming events. This "default" one is used when channel is not specified.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
 
-You may create additional Channels for the App. Creating multiple Channels is advanced usage. You don't need to create any in order to use PredictionIO. The Channel is associated with one App only and must have unique name within the same App.
+    http://www.apache.org/licenses/LICENSE-2.0
 
-Creating multiple Channels allows you more easily to identify, manage and use specific event data if you may collect events from different multiple sources (eg. mobile, website, or third-party webhooks service) for the your application.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Each App has a default channel (without name) which stores all incoming events.
+This "default" one is used when channel is not specified.
+
+You may create additional Channels for the App. Creating multiple Channels is
+advanced usage. You don't need to create any in order to use Apache PredictionIO
+(incubating). The Channel is associated with one App only and must have unique
+name within the same App.
+
+Creating multiple Channels allows you more easily to identify, manage and use
+specific event data if you may collect events from different multiple sources
+(eg. mobile, website, or third-party webhooks service) for the your application.
 
 (More usage details coming soon...)
 
 ## Create a new Channel
 
-For example, to create a new channel "myChannel" for app "myApp", run following `pio` command:
+For example, to create a new channel "myChannel" for app "myApp", run following
+`pio` command:
 
 ```
 pio app channel-new myApp myChannel

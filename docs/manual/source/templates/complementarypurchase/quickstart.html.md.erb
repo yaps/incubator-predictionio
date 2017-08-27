@@ -2,6 +2,23 @@
 title: Quick Start - Complementary Purchase Engine Template
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 ## Overview
 
 This engine template recommends the complementary items which most user frequently buy at the same time together with one or more items in the query.
@@ -33,7 +50,7 @@ NOTE: You can customize to use other event.
 
 ## 2. Create a new Engine from an Engine Template
 
-<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyComplementaryPurchase', template_name: 'Complementary Purchase Engine Template', template_repo: 'template-scala-parallel-complementarypurchase' } %>
+<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyComplementaryPurchase', template_name: 'Complementary Purchase Engine Template', template_repo: 'PredictionIO/template-scala-parallel-complementarypurchase' } %>
 
 ## 3. Generate an App ID and Access Key
 
@@ -60,7 +77,7 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "buy",
-  "entityType" : "user"
+  "entityType" : "user",
   "entityId" : "u0",
   "targetEntityType" : "item",
   "targetEntityId" : "i0",
@@ -159,8 +176,8 @@ client.create_event(
   </div>
   <div data-tab="Java SDK" data-lang="java">
 ```java
-import io.prediction.Event;
-import io.prediction.EventClient;
+import org.apache.predictionio.Event;
+import org.apache.predictionio.EventClient;
 
 import com.google.common.collect.ImmutableList;
 
@@ -198,11 +215,11 @@ A Python import script `import_eventserver.py` is provided to import sample data
 
 <%= partial 'shared/quickstart/install_python_sdk' %>
 
-Make sure you are under the `MyComplementaryPurchase` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+Make sure you are under the `MyComplementaryPurchase` directory. Execute the following to import the data:
 
 ```
 $ cd MyComplementaryPurchase
-$ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+$ python data/import_eventserver.py --access_key $ACCESS_KEY
 ```
 
 You should see the following output:
@@ -233,7 +250,7 @@ If you include one or more items in the query, the engine will use each combinat
 
 You can simply send a query by making a HTTP request or through the `EngineClient` of an SDK.
 
-With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
+With the deployed engine running, open another terminal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
   <div data-tab="REST API" data-lang="json">
@@ -297,7 +314,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 
-import io.prediction.EngineClient;
+import org.apache.predictionio.EngineClient;
 
 // create client object
 EngineClient engineClient = new EngineClient("http://localhost:8000");

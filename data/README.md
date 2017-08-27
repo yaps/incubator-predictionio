@@ -1,6 +1,23 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 ## Data Collection API
 
-Please refer to the documentation site - [Collecting Data through Event API](http://docs.prediction.io/datacollection/eventapi/).
+Please refer to the documentation site - [Collecting Data through REST/SDKs](http://predictionio.incubator.apache.org/datacollection/eventapi/).
 
 ## For Development Use only:
 
@@ -11,7 +28,7 @@ $ sbt/sbt "data/compile"
 $ set -a
 $ source conf/pio-env.sh
 $ set +a
-$ sbt/sbt "data/run-main io.prediction.data.api.Run"
+$ sbt/sbt "data/run-main org.apache.predictionio.data.api.Run"
 ```
 
 ### Very simple test
@@ -32,20 +49,20 @@ $ sbt/sbt "data/test"
 - test for EventService
 
 ```
-$ sbt/sbt "data/test-only io.prediction.data.api.EventServiceSpec"
+$ sbt/sbt "data/test-only org.apache.predictionio.data.api.EventServiceSpec"
 ```
 
 - test for LEvents
 
 ```
-$ sbt/sbt "data/test-only io.prediction.data.storage.LEventsSpec"
+$ sbt/sbt "data/test-only org.apache.predictionio.data.storage.LEventsSpec"
 ```
 
 - test for ExampleJson and ExampleForm webhooks
 
 ```
-$ sbt/sbt "data/test-only io.prediction.data.webhooks.examplejson.ExampleJsonConnectorSpec"
-$ sbt/sbt "data/test-only io.prediction.data.webhooks.exampleform.ExampleFormConnectorSpec"
+$ sbt/sbt "data/test-only org.apache.predictionio.data.webhooks.examplejson.ExampleJsonConnectorSpec"
+$ sbt/sbt "data/test-only org.apache.predictionio.data.webhooks.exampleform.ExampleFormConnectorSpec"
 ```
 
 ### Upgrade from 0.8.0/0.8.1 to 0.8.2
@@ -63,7 +80,7 @@ Replace <to app ID> by the returned app ID:
 $ set -a
 $ source conf/pio-env.sh
 $ set +a
-$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.Upgrade <from app ID>" "<to app ID>"
+$ sbt/sbt "data/run-main org.apache.predictionio.data.storage.hbase.upgrade.Upgrade <from app ID>" "<to app ID>"
 ```
 
 ### Upgrade from 0.8.2 to 0.8.3
@@ -91,7 +108,7 @@ $ bin/pio app new NewApp
 The App with `<new_app_id>` must be empty before you upgrade. You can check the status of this new created app using:
 
 ```
-$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.CheckDistribution <new_app_id>"
+$ sbt/sbt "data/run-main org.apache.predictionio.data.storage.hbase.upgrade.CheckDistribution <new_app_id>"
 ```
 
 If it shows that it is non-empty, you can clean it with
@@ -103,12 +120,12 @@ $ bin/pio app data-delete <new_app_name>
 #### 2. Run the following to migrate from <old_app_id> to <new_app_id>
 
 ```
-$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3 <old_app_id> <new_app_id>"
+$ sbt/sbt "data/run-main org.apache.predictionio.data.storage.hbase.upgrade.Upgrade_0_8_3 <old_app_id> <new_app_id>"
 ... Done.
 ```
 
 You can use the following to check the <new_app_id> again. It should display the number of data being migrated:
 
 ```
-$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.CheckDistribution <new_app_id>"
+$ sbt/sbt "data/run-main org.apache.predictionio.data.storage.hbase.upgrade.CheckDistribution <new_app_id>"
 ```

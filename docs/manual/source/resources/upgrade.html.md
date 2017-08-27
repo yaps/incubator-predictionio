@@ -2,20 +2,47 @@
 title: Upgrade Instructions
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 
 This page highlights major changes in each version and upgrade tools.
 
-# How to upgrade
+# How to Upgrade
 
 To upgrade and use new version of PredictionIO, do the following:
 
-- Download and unzip the new PredictionIO binary (the download path can be found in the [Download PredictionIO section](/install/install-linux/#method-2:-manual-install))
-- Retain the setting from current PredictionIO/conf/pio-env.sh to the new PredictionIO/conf/pio-env.sh.
-- If you have added PredictionIO/bin to your `PATH` environment variable before, change it to the new PredictionIO/bin as well.
+- Download and build the new PredictionIO binary
+  [(instructions)](/install/install-sourcecode/).
+- Retain the setting from current `PredictionIO/conf/pio-env.sh` to the new
+  `PredictionIO/conf/pio-env.sh`.
+- If you have added `PredictionIO/bin` to your `PATH` environment variable before,
+  change it to the new `PredictionIO/bin` as well.
 
 # Additional Notes for Specific Versions Upgrade
 
 In addition, please take notes of the following for specific version upgrade.
+
+## Upgrade to 0.11.0
+
+Starting from 0.11.0, PredictionIO no longer bundles any JDBC drivers in the
+binary assembly. If your setup is using a JDBC backend and you run into storage
+connection errors after an upgrade, please manually install the JDBC driver. If
+you use PostgreSQL, you can find instructions
+[here](/install/install-sourcecode#pgsql).
 
 ## Upgrade to 0.9.2
 
@@ -45,13 +72,13 @@ NOTE: The following changes are not required for using 0.9.2 but it's recommende
 - remove this line of code:
 
     ```scala
-    import io.prediction.data.storage.Storage
+    import org.apache.predictionio.data.storage.Storage
     ```
 
     and replace it by
 
     ```scala
-    import io.prediction.data.store.PEventStore
+    import org.apache.predictionio.data.store.PEventStore
     ```
 
 - Change `appId: Int` to `appName: String` in DataSourceParams
@@ -94,9 +121,9 @@ NOTE: The following changes are not required for using 0.9.2 but it's recommende
 
 If Storage.getLEvents() is also used in Algorithm (such as ALSAlgorithm of E-Commerce Recommendation template), you also need to do following:
 
-NOTE: If `io.prediction.data.storage.Storage` is not used at all (such as Recommendation, Similar Product, Classification, Lead Scoring, Product Ranking template), there is no need to change Algorithm and can go to the later **engine.json** section.
+NOTE: If `org.apache.predictionio.data.storage.Storage` is not used at all (such as Recommendation, Similar Product, Classification, Lead Scoring, Product Ranking template), there is no need to change Algorithm and can go to the later **engine.json** section.
 
-- remove `import io.prediction.data.storage.Storage` and replace it by `import io.prediction.data.store.LEventStore`
+- remove `import org.apache.predictionio.data.storage.Storage` and replace it by `import org.apache.predictionio.data.store.LEventStore`
 - change `appId` to `appName` in the XXXAlgorithmParams class.
 - remove this line of code: `@transient lazy val lEventsDb = Storage.getLEvents()`
 - locate where `LEventStore.findByEntity()` is used, change it to `LEventStore.findByEntity()`:
@@ -230,22 +257,22 @@ Follow instructions below to modify existing engine templates to be compatible w
     import org.apache.spark.SparkContext
     ```
 
-2. Modify the file `build.sbt` in your template directory to use `pioVersion.value` as the version of io.prediction.core dependency:
+2. Modify the file `build.sbt` in your template directory to use `pioVersion.value` as the version of org.apache.predictionio.core dependency:
 
     Under your template's root directory, you should see a file `build.sbt` which has the following content:
 
     ```
     libraryDependencies ++= Seq(
-      "io.prediction"    %% "core"          % "0.8.6" % "provided",
+      "org.apache.predictionio"    %% "core"          % "0.8.6" % "provided",
       "org.apache.spark" %% "spark-core"    % "1.2.0" % "provided",
       "org.apache.spark" %% "spark-mllib"   % "1.2.0" % "provided")
     ```
 
-    Change the version of `"io.prediction" && "core"` to `pioVersion.value`:
+    Change the version of `"org.apache.predictionio" && "core"` to `pioVersion.value`:
 
     ```
     libraryDependencies ++= Seq(
-      "io.prediction"    %% "core"          % pioVersion.value % "provided",
+      "org.apache.predictionio"    %% "core"          % pioVersion.value % "provided",
       "org.apache.spark" %% "spark-core"    % "1.2.0" % "provided",
       "org.apache.spark" %% "spark-mllib"   % "1.2.0" % "provided")
     ```
@@ -253,7 +280,7 @@ Follow instructions below to modify existing engine templates to be compatible w
 3. Create a new file `pio-build.sbt` in template's **project/** directory with the following content:
 
     ```
-    addSbtPlugin("io.prediction" % "pio-build" % "0.9.0")
+    addSbtPlugin("org.apache.predictionio" % "pio-build" % "0.9.0")
     ```
 
     Then, you should see the following two files in the **project/** directory:
@@ -404,5 +431,5 @@ Replace by the returned app ID: ( is the original app ID used in 0.8.0/0.8.2.)
 $ set -a
 $ source conf/pio-env.sh
 $ set +a
-$ sbt/sbt "data/run-main io.prediction.data.storage.hbase.upgrade.Upgrade <from app ID>" "<to app ID>"
+$ sbt/sbt "data/run-main org.apache.predictionio.data.storage.hbase.upgrade.Upgrade <from app ID>" "<to app ID>"
 ```

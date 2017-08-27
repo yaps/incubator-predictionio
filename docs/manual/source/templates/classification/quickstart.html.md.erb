@@ -2,6 +2,23 @@
 title: Quick Start - Classification Engine Template
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 ## Overview
 
 An engine template is an almost-complete implementation of an engine.
@@ -43,7 +60,7 @@ WARNING: for version < v0.3.1, it is array of features values
 
 ## 2. Create a new Engine from an Engine Template
 
-<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyClassification', template_name: 'Classification Engine Template', template_repo: 'template-scala-parallel-classification' } %>
+<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyClassification', template_name: 'Classification Engine Template', template_repo: 'apache/incubator-predictionio-template-attribute-based-classifier' } %>
 
 ## 3. Generate an App ID and Access Key
 
@@ -66,7 +83,7 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$set",
-  "entityType" : "user"
+  "entityType" : "user",
   "entityId" : "u0",
   "properties" : {
     "attr0" : 0,
@@ -150,8 +167,8 @@ client.create_event(
   <div data-tab="Java SDK" data-lang="java">
 ```java
 import com.google.common.collect.ImmutableMap;
-import io.prediction.Event;
-import io.prediction.EventClient;
+import org.apache.predictionio.Event;
+import org.apache.predictionio.EventClient;
 
 EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
 
@@ -183,7 +200,7 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$set",
-  "entityType" : "user"
+  "entityType" : "user",
   "entityId" : "u1",
   "properties" : {
     "attr0" : 0
@@ -195,7 +212,7 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$set",
-  "entityType" : "user"
+  "entityType" : "user",
   "entityId" : "u1",
   "properties" : {
     "attr1" : 1,
@@ -208,7 +225,7 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$set",
-  "entityType" : "user"
+  "entityType" : "user",
   "entityId" : "u1",
   "properties" : {
     "plan" : 1
@@ -348,11 +365,11 @@ Event Server using Python SDK. Please upgrade to the latest Python SDK.
 
 <%= partial 'shared/quickstart/install_python_sdk' %>
 
-Make sure you are under the `MyClassification` directory. Replace the value of access_key parameter by your **Access Key** and run:
+Make sure you are under the `MyClassification` directory. Execute the following to import the data:
 
 ```
 $ cd MyClassification
-$ python data/import_eventserver.py --access_key obbiTuSOiMzyFKsvjjkDnWk1vcaHjcjrv9oT3mtN3y6fOlpJoVH459O1bPmDzCdv
+$ python data/import_eventserver.py --access_key $ACCESS_KEY
 ```
 
 You should see the following output:
@@ -380,7 +397,7 @@ you send this JSON `{ "attr0":2, "attr1":0, "attr2":0 }` to the deployed engine 
 return a JSON of the predicted plan. Simply send a query by making a HTTP
 request or through the `EngineClient` of an SDK.
 
-With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
+With the deployed engine running, open another terminal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
   <div data-tab="REST API" data-lang="bash">
@@ -429,7 +446,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 
-import io.prediction.EngineClient;
+import org.apache.predictionio.EngineClient;
 
 EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
 

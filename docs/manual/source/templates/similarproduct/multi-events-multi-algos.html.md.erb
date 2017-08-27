@@ -2,6 +2,23 @@
 title: Multiple Events and Multiple Algorithms
 ---
 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 This is more advanced example, we recommend you go through the [DASE](dase.html) explanation first.
 
 The [default algorithm described in DASE](dase.html#algorithm) uses user-to-item view events as training data. However, your application may have more than one type of events which you want to take into account, such as buy, rate and like events. One way to incorporate other types of events to improve the system is to add another algorithm to process these events, build a separated model and then combine the outputs of multiple algorithms during Serving.
@@ -16,17 +33,15 @@ This example will demonstrate the following:
 - Use positive and negative implicit events such as like and dislike with MLlib ALS algorithm
 - Integrate multiple algorithms into one engine
 
-The complete source code of this examlpe can be found in `examples/scala-parallel-similarproduct-multi`.
-
-INFO: Require PredictionIO version >= 0.8.6 to run this example.
+The complete source code of this examlpe can be found in [here](https://github.com/apache/incubator-predictionio/tree/develop/examples/scala-parallel-similarproduct/multi-events-multi-algos).
 
 ### Step 1. Read "like" and "dislike" events as TrainingData
 
 Modify the following in DataSource.scala:
 
-- In addiiton to the original `ViewEvent` class, add a new class `LikeEvent` which has a boolean `like` field to represent it's like or dislike event.
-- Add a new field `likeEvents` into `TrainingData` class to store the `RDD[LikeEvents]`.
-- Modidy DataSource's `read()` function to read "like" and "dislike" events from the Event Store.
+- In addition to the original `ViewEvent` class, add a new class `LikeEvent` which has a boolean `like` field to represent it's like or dislike event.
+- Add a new field `likeEvents` into `TrainingData` class to store the `RDD[LikeEvent]`.
+- Modidy DataSource's `readTraining()` function to read "like" and "dislike" events from the Event Store.
 
 The modification is shown below:
 
@@ -46,8 +61,8 @@ class DataSource(val dsp: DataSourceParams)
 
     // ADDED
     // get all "user" "like" and "dislike" "item" events
-    val likeEventsRDD: RDD[LikeEvent] = eventsDb.find(
-      appId = dsp.appId,
+    val likeEventsRDD: RDD[LikeEvent] = PEventStore.find(
+      appName = dsp.appName,
       entityType = Some("user"),
       eventNames = Some(List("like", "dislike")),
       // targetEntityType is optional field of an event.
@@ -71,7 +86,7 @@ class DataSource(val dsp: DataSourceParams)
           }
         }
         likeEvent
-      }
+      }.cache()
 
     new TrainingData(
       users = usersRDD,
@@ -160,13 +175,12 @@ In summary, this new `LikeAlgorithm` does the following:
 It is shown in the code below:
 
 ```scala
-package org.template.similarproduct
+package org.apache.predictionio.examples.similarproduct
 
-import io.prediction.data.storage.BiMap
+import org.apache.predictionio.data.storage.BiMap
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.recommendation.ALS
 import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
 
@@ -219,7 +233,6 @@ class LikeAlgorithm(ap: ALSAlgorithmParams) extends ALSAlgorithm(ap) {
         // key is (uindex, iindex) tuple, value is (like, t) tuple
         ((uindex, iindex), (r.like, r.t))
       }.filter { case ((u, i), v) =>
-        //val  = d
         // keep events with valid user and item index
         (u != -1) && (i != -1)
       }.reduceByKey { case (v1, v2) => // MODIFIED
@@ -255,7 +268,7 @@ class LikeAlgorithm(ap: ALSAlgorithmParams) extends ALSAlgorithm(ap) {
       seed = seed)
 
     new ALSModel(
-      productFeatures = m.productFeatures,
+      productFeatures = m.productFeatures.collectAsMap.toMap,
       itemStringIntMap = itemStringIntMap,
       items = items
     )
@@ -267,7 +280,7 @@ class LikeAlgorithm(ap: ALSAlgorithmParams) extends ALSAlgorithm(ap) {
 
 ### Step 4. Modify Serving to combine multiple algorithms' outputs
 
-When the engine is deployed, the Query is sent to all algorithms of the engine. The PredictedResults returned by all algoritms are passed to Serving component for further processing, as you could see that the argument `predictedResults` of the `serve()` function is type of `Seq[PredictedResult]`.
+When the engine is deployed, the Query is sent to all algorithms of the engine. The PredictedResults returned by all algorithms are passed to Serving component for further processing, as you could see that the argument `predictedResults` of the `serve()` function is type of `Seq[PredictedResult]`.
 
 In this example, the `serve()` function at first standardizes the PredictedResults of each algorithm so that we can combine the scores of multiple algorithms by adding the scores of the same item. Then we can take the top N items as defined in `query`.
 
@@ -318,7 +331,7 @@ class Serving
       .take(query.num)
       .map { case (k,v) => ItemScore(k, v) }
 
-    new PredictedResult(combined)
+    PredictedResult(combined)
   }
 }
 
@@ -329,18 +342,20 @@ NOTE: You may combine results of multiple algorithms in different ways based on 
 
 ### Step 5. Modify Engine.scala and engine.json
 
-Modify Engine.scala to include the new algorithm `LikeAlgorithm` class and give it the name `"likealgo"` as shown below. This defines an Engine with two available algorithms named as `"als"` and `"likealgo"`:
+Modify Engine.scala to include the new algorithm `LikeAlgorithm` class and give it the name `"likealgo"` as shown below:
 
 
 ```scala
 ...
 
-object SimilarProductEngine extends IEngineFactory {
+object SimilarProductEngine extends EngineFactory {
   def apply() = {
     new Engine(
       classOf[DataSource],
       classOf[Preparator],
-      Map("als" -> classOf[ALSAlgorithm],
+      Map(
+        "als" -> classOf[ALSAlgorithm],
+        "cooccurrence" -> classOf[CooccurrenceAlgorithm],
         "likealgo" -> classOf[LikeAlgorithm]), // ADDED
       classOf[Serving])
   }
@@ -389,11 +404,11 @@ That's it! Now you have a engine configured with two algorithms.
 
 ### Sample data with "like" and "dislike" events
 
-For demonstration purpose, a sample import script is also provided for you to quickly test this engine. The script is modified from the original one used in [Quick Start](quickstart.html#sample-data-for-quick-start) with the addition of importing like and dislike events.
+For demonstration purpose, a sample import script is also provided for you to quickly test this engine. The script is modified from the original one used in [Quick Start](quickstart.html#import-more-sample-data) with the addition of importing like and dislike events.
 
-You could find the import script in `examples/scala-parallel-similarproduct-multi/data/import_eventserver.py`.
+You could find the import script in `data/import_eventserver.py`.
 
-You can create a new App. Go to the directory `examples/scala-parallel-similarproduct-multi`. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+Make sure you are under the App directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
@@ -403,4 +418,4 @@ WARNING: If you see error **TypeError: __init__() got an unexpected keyword argu
 please update the Python SDK to the latest version.
 
 
-You are ready to run pio build, train and deploy as described in the [Quick Start](quickstart.html#deploy-the-engine-as-a-service).
+You are ready to run pio build, train and deploy as described in the [Quick Start](quickstart.html#5.-deploy-the-engine-as-a-service).
